@@ -10,6 +10,7 @@
  *     [{ name: "Butter Chicken", price: 350, qty: 2, addons: ["Extra Butter:50", "Naan:40"] }, ...]
  *   - Each addon string format: "AddonName:Price" (split by ":" to get price)
  *   - Per item total = (price + sum of addon prices) * qty
+ * 
  *   - Calculate:
  *     - items: array of { name, qty, basePrice, addonTotal, itemTotal }
  *     - subtotal: sum of all itemTotals
@@ -47,4 +48,68 @@
  */
 export function buildZomatoOrder(cart, coupon) {
   // Your code here
+   if(!Array.isArray(cart) || cart.length == 0) return null
+const validCart = cart.filter(item => Number(item.qty) > 0);
+
+if(validCart.length == 0) return null;
+  
+let items = validCart.map((el) => {
+
+  let name = el.name;
+  let basePrice = parseFloat(el.price) || 0;
+  let qty = el.qty;
+  let addonTotal = (el.addons || []).reduce((acc, addon) => {
+  const parts = addon.split(":");
+  const price = parseFloat(parts[1]);
+  return acc + (isNaN(price) ? 0 : price);
+}, 0);
+
+
+  let itemTotal = (basePrice + addonTotal) * qty
+
+  return {name, qty, basePrice, addonTotal, itemTotal}
+});
+
+const subTotal = items.reduce((acc,cur) => {
+   return acc + cur.itemTotal
+},0);
+
+let deliveryFee;
+
+if(subTotal < 500) {
+    deliveryFee = 30
+}else if (subTotal >= 500 && subTotal < 1000) {
+  deliveryFee = 15
+}else{
+  deliveryFee = 0
+}
+
+let gst = parseFloat((subTotal * 0.05).toFixed(2));
+
+let discount = 0;
+
+if (typeof coupon === "string" && coupon.length > 0) {
+  const code = coupon.toUpperCase();
+
+  if (code === "FIRST50") {
+    discount = Math.min(subTotal * 0.5, 150);
+  } 
+  else if (code === "FLAT100") {
+    discount = 100;
+  } 
+  else if (code === "FREESHIP") {
+    discount = deliveryFee;
+    deliveryFee = 0
+  }
+}
+
+
+
+let grandTotal = subTotal + deliveryFee + gst - discount;
+grandTotal = parseFloat(Math.max(0,grandTotal).toFixed(2));
+
+return {items, subtotal: subTotal, deliveryFee, gst, discount, grandTotal}
+
+
+
 }

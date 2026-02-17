@@ -42,4 +42,90 @@
  */
 export function generateReportCard(student) {
   // Your code here
+  if (!student || typeof student !== "object") return null;
+  if (typeof student.name !== "string" || student.name.length === 0)
+    return null;
+
+  if (
+    !student.marks ||
+    typeof student.marks !== "object" ||
+    Object.keys(student.marks).length === 0
+  )
+    return null;
+
+  const marksValue = Object.values(student.marks);
+
+  for (let mark of marksValue) {
+    if (
+      mark < 0 ||
+      mark > 100 ||
+      !Number.isFinite(mark) ||
+      typeof mark !== "number"
+    ) {
+      return null;
+    }
+  }
+
+  // Calculating Total Marks
+  let totalMarks = marksValue.reduce((acc,curr) => {
+         return acc+curr
+  },0)
+
+  // No of Subjects 
+  let totalSubjects = Object.keys(student.marks);
+
+  // calculating percentage
+  let percentage = ((totalMarks / (totalSubjects.length * 100)) * 100)
+   percentage = parseFloat( percentage.toFixed(2));
+
+   let grade
+
+   if(percentage >= 90) {
+    grade = "A+"
+   }else if(percentage >= 80) {
+    grade = "A"
+   }else if(percentage >=70) {
+    grade = "B"
+   }else if(percentage >= 60) {
+    grade = "C"
+   }else if(percentage >= 40) {
+    grade = "D";
+   }else  {
+    grade = "F"
+   }
+
+   const detailResult = Object.entries(student.marks);
+
+   let highestMark = 0;
+   let highestSub = "";
+
+   let lowestMark = Infinity;
+   let lowestSub = "";
+
+   for(let i = 0; i< detailResult.length; i++) {
+    
+      if(detailResult[i][1] > highestMark) {
+        highestMark = detailResult[i][1];
+        highestSub = detailResult[i][0];
+      }
+
+      if(detailResult[i][1] < lowestMark) {
+        lowestMark = detailResult[i][1];
+        lowestSub = detailResult[i][0];
+      }
+
+   };
+
+   const passedSubjects = detailResult.filter(([sub,mark]) => mark>=40).map(([sub,mark]) => {
+    // have to return array of subject names
+    return sub;
+   }) 
+
+  
+   const failedSubjects = detailResult.filter(([sub,mark]) => mark < 40).map(([sub,mark]) => sub);
+
+
+
+return { name: student.name, totalMarks, percentage, grade, highestSubject: highestSub, lowestSubject: lowestSub, passedSubjects, failedSubjects, subjectCount: totalSubjects.length }
+
 }

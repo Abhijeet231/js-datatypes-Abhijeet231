@@ -9,8 +9,10 @@
  *   - transactions is array of objects:
  *     [{ id: "TXN001", type: "credit"/"debit", amount: 500,
  *        to: "Rahul", category: "food", date: "2025-01-15" }, ...]
+ *
  *   - Skip transactions where amount is not a positive number
  *   - Skip transactions where type is not "credit" or "debit"
+ *
  *   - Calculate (on valid transactions only):
  *     - totalCredit: sum of all "credit" type amounts
  *     - totalDebit: sum of all "debit" type amounts
@@ -48,4 +50,82 @@
  */
 export function analyzeUPITransactions(transactions) {
   // Your code here
+  if (!Array.isArray(transactions) || transactions.length == 0) return null;
+
+  let validTransactions = transactions.filter(
+    (el) =>
+      typeof el.amount === "number" &&
+      el.amount > 0 &&
+      typeof el.type === "string" &&
+      (el.type.toLowerCase() === "credit" || el.type.toLowerCase() === "debit"),
+  );
+
+  if (validTransactions.length === 0) return null;
+
+  validTransactions = validTransactions.map((el) => ({
+    ...el,
+    type: el.type.toLowerCase(),
+  }));
+
+  const totalCredit = validTransactions
+    .filter((el) => el.type == "credit")
+    .reduce((acc, curr) => acc + Number(curr.amount), 0);
+
+  const totalDebit = validTransactions
+    .filter((el) => el.type == "debit")
+    .reduce((acc, cur) => acc + Number(cur.amount), 0);
+
+  const netBalance = totalCredit - totalDebit;
+
+  const transactionCount = validTransactions.length;
+
+  const totalAmount = validTransactions.reduce((acc, el) => acc + el.amount, 0);
+  const avgTransaction = Math.round(totalAmount / transactionCount);
+
+  const highestTransaction = validTransactions.reduce((acc, cur) =>
+    cur.amount > acc.amount ? cur : acc,
+  );
+
+  // Category breakdown
+  const categoryBreakdown = validTransactions.reduce((acc, el) => {
+    if (!acc[el.category]) {
+      acc[el.category] = 0;
+    }
+
+    acc[el.category] += Number(el.amount);
+
+    return acc;
+  }, {});
+
+  const frequency = validTransactions.reduce((acc, el) => {
+    acc[el.to] = (acc[el.to] || 0) + 1;
+    return acc;
+  }, {});
+
+  let frequentContact;
+  let max = 0;
+
+  for (let el in frequency) {
+    if (frequency[el] > max) {
+      max = frequency[el];
+      frequentContact = el;
+    }
+  }
+
+  const allAbove100 = validTransactions.every((el) => el.amount > 100);
+
+  const hasLargeTransaction = validTransactions.some((el) => el.amount >= 5000);
+
+  return {
+    totalCredit,
+    totalDebit,
+    netBalance,
+    transactionCount,
+    avgTransaction,
+    highestTransaction,
+    categoryBreakdown,
+    frequentContact,
+    allAbove100,
+    hasLargeTransaction,
+  };
 }

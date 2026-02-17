@@ -29,4 +29,16 @@
  */
 export function maskAadhaar(aadhaarNumber) {
   // Your code here
+  if(typeof aadhaarNumber !== "string" || aadhaarNumber.length !== 12 || aadhaarNumber.includes("-") || !/^\d{12}$/.test(aadhaarNumber)
+ ) return "INVALID";
+
+  let lastFourDigit = aadhaarNumber.slice(8);
+  let hashedNumber = "X".repeat(8) 
+
+  let firstPart = hashedNumber.slice(0,4);
+  let secondPart = hashedNumber.slice(4,8);
+
+  let finalResult = `${firstPart}-${secondPart}-${lastFourDigit}`;
+
+  return finalResult;
 }

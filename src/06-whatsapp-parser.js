@@ -40,4 +40,48 @@
  */
 export function parseWhatsAppMessage(message) {
   // Your code here
+  if(typeof message !== "string") return null;
+
+  
+if(!message.includes(" - ") || !message.includes(": ")) return null;
+
+  let date = message.slice(0, message.indexOf(",")); 
+
+  let time = message.slice(message.indexOf(", ")+2, message.indexOf(" - ")); // what does +2 means here ? 
+
+ let dashedIdx = message.indexOf(" - ");
+let colonIdx = message.indexOf(": ", dashedIdx);
+
+let sender = message.slice(dashedIdx + 3, colonIdx);
+let text = message.slice(colonIdx + 2).trim();
+
+
+  let words  = text.split(" ").filter((el) => Boolean(el));
+ let wordCount = words.length;
+  
+  // sentiment detection
+  let lowerText = text.toLowerCase();
+  let sentiment = "neutral";
+  
+const funny = lowerText.includes("😂") || 
+lowerText.includes(":)") ||
+lowerText.includes("haha");
+
+const love = lowerText.includes("❤") || 
+lowerText.includes("love")||
+lowerText.includes("pyaar");
+
+if(funny) {
+  sentiment = "funny"
+}else if(love) {
+  sentiment = "love"
+}
+
+
+ return { date, time, sender, text, wordCount, sentiment };
+
+
+ 
+
+
 }
